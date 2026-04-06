@@ -1,3 +1,4 @@
+
 <?php
 
 /**
@@ -45,4 +46,28 @@ function plugin_notifytags_install(): bool
 function plugin_notifytags_uninstall(): bool
 {
     return true;
+}
+
+function plugin_notifytags_register_tags($target): void
+{
+    $target->addTagToList([
+        'tag'    => 'ticket.textcontent',
+        'label'  => __('Ticket content (text only)', 'notifytags'),
+        'value'  => true,
+        'events' => NotificationTarget::TAG_FOR_ALL_EVENTS,
+    ]);
+}
+
+function plugin_notifytags_item_get_data($target): void
+{
+    if (!($target instanceof NotificationTargetTicket)) {
+        return;
+    }
+
+    if (isset($target->obj) && $target->obj instanceof Ticket) {
+        $content = $target->obj->fields['content'] ?? '';
+        $text_content = strip_tags(preg_replace('/<img[^>]*>/i', '', $content));
+        $text_content = html_entity_decode($text_content, ENT_QUOTES, 'UTF-8');
+        $target->data['##ticket.textcontent##'] = $text_content;
+    }
 }

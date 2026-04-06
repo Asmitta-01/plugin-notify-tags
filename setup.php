@@ -46,7 +46,17 @@ define("PLUGIN_NOTIFYTAGS_MAX_GLPI_VERSION", "11.0.99");
  * Init hooks of the plugin.
  * REQUIRED
  */
-function plugin_init_notifytags(): void {}
+function plugin_init_notifytags(): void
+{
+    global $PLUGIN_HOOKS;
+    $PLUGIN_HOOKS[\Glpi\Plugin\Hooks::CSRF_COMPLIANT]['notifytags'] = true;
+    $PLUGIN_HOOKS[\Glpi\Plugin\Hooks::ITEM_ADD_TARGETS]['notifytags'] = [
+        'NotificationTargetTicket' => 'plugin_notifytags_register_tags',
+    ];
+    $PLUGIN_HOOKS[\Glpi\Plugin\Hooks::ITEM_GET_DATA]['notifytags'] = [
+        'NotificationTargetTicket' => 'plugin_notifytags_item_get_data',
+    ];
+}
 
 /**
  * Get the name and the version of the plugin
