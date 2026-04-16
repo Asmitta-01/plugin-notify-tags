@@ -36,7 +36,7 @@ define('PLUGIN_NOTIFYTAGS_VERSION', '0.0.1');
 
 // Minimal GLPI version, inclusive
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
-define("PLUGIN_NOTIFYTAGS_MIN_GLPI_VERSION", "11.0.0");
+define("PLUGIN_NOTIFYTAGS_MIN_GLPI_VERSION", "10.0.16");
 
 // Maximum GLPI version, exclusive
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
@@ -81,8 +81,8 @@ function plugin_version_notifytags(): array
     return [
         'name'           => 'NotifyTags',
         'version'        => PLUGIN_NOTIFYTAGS_VERSION,
-        'author'         => '<a href="http://www.teclib.com">Teclib\'</a>',
-        'license'        => '',
+        'author'         => '<a href="https://www.brayantiwa.me">Brayan Tiwa\'</a>',
+        'license'        => 'GPLv2',
         'homepage'       => '',
         'requirements'   => [
             'glpi' => [
