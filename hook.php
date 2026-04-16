@@ -76,7 +76,6 @@ function plugin_notifytags_item_get_data($target): void
 
     $target->data['##ticket.textcontent##'] = \Glpi\RichText\RichText::getTextFromHtml(
         $without_images,
-        false, // do not keep HTML presentation (strip all remaining tags)
-        false  // non-compact: preserve line breaks between paragraphs
+        preserve_case: true,
     );
 }
