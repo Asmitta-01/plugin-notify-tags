@@ -64,10 +64,19 @@ function plugin_notifytags_item_get_data($target): void
         return;
     }
 
-    if (isset($target->obj) && $target->obj instanceof Ticket) {
-        $content = $target->obj->fields['content'] ?? '';
-        $text_content = strip_tags(preg_replace('/<img[^>]*>/i', '', $content));
-        $text_content = html_entity_decode($text_content, ENT_QUOTES, 'UTF-8');
-        $target->data['##ticket.textcontent##'] = $text_content;
+    $html_content = $target->data['##ticket.description##'] ?? '';
+    if ($html_content === '') {
+        return;
     }
+
+    // Remove <figure> elements that wrap a single image (leave no empty blocks behind)
+    $without_images = preg_replace('/<figure[^>]*>\s*<img[^>]*\/?>\s*<\/figure>/is', '', $html_content);
+    // Remove any remaining standalone <img> tags
+    $without_images = preg_replace('/<img[^>]*\/?>/is', '', $without_images);
+
+    $target->data['##ticket.textcontent##'] = \Glpi\RichText\RichText::getTextFromHtml(
+        $without_images,
+        false, // do not keep HTML presentation (strip all remaining tags)
+        false  // non-compact: preserve line breaks between paragraphs
+    );
 }
