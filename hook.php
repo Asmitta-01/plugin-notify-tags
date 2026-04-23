@@ -56,6 +56,13 @@ function plugin_notifytags_register_tags($target): void
         'value'  => true,
         'events' => NotificationTarget::TAG_FOR_ALL_EVENTS,
     ]);
+
+    $target->addTagToList([
+        'tag'    => 'ticket.contentfixed',
+        'label'  => __('Ticket content with fixed images sizes', 'notifytags'),
+        'value'  => true,
+        'events' => NotificationTarget::TAG_FOR_ALL_EVENTS,
+    ]);
 }
 
 function plugin_notifytags_item_get_data($target): void
@@ -64,18 +71,60 @@ function plugin_notifytags_item_get_data($target): void
         return;
     }
 
-    $html_content = $target->data['##ticket.description##'] ?? '';
+
+    $target->data['##ticket.textcontent##'] = '';
+    $target->data['##ticket.contentfixed##'] = '';
+
+    if (!isset($target->obj) || !($target->obj instanceof Ticket)) {
+        return;
+    }
+
+
+    $html_content = $target->obj->fields['content'] ?? '';
     if ($html_content === '') {
         return;
     }
 
-    // Remove <figure> elements that wrap a single image (leave no empty blocks behind)
-    $without_images = preg_replace('/<figure[^>]*>\s*<img[^>]*\/?>\s*<\/figure>/is', '', $html_content);
-    // Remove any remaining standalone <img> tags
-    $without_images = preg_replace('/<img[^>]*\/?>/is', '', $without_images);
 
-    $target->data['##ticket.textcontent##'] = \Glpi\RichText\RichText::getTextFromHtml(
-        $without_images,
-        preserve_case: true,
+    // TEXTCONTENT : remplace les images par un lien
+    $prepared_text = preg_replace_callback(
+        '/<img\b[^>]*src\s*=\s*(["\'])(.*?)\1[^>]*\/?>/is',
+        function ($matches) {
+            $url = html_entity_decode($matches[2], ENT_QUOTES, 'UTF-8');
+            $safe = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
+            return '<a href="' . $safe . '">Image: ' . $safe . '</a>';
+        },
+        $html_content
     );
+
+    $target->data['##ticket.textcontent##'] = \Glpi\RichText\RichText::getSafeHtml($prepared_text);
+
+
+    // CONTENTFIXED : conserve les images mais force leur taille
+    $contentWithFixedImages = preg_replace_callback(
+        '/<img\b([^>]*)>/is',
+        function ($matches) {
+            $attrs = $matches[1];
+
+            $attrs = preg_replace(
+                '/\s+(?:width|height)\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)/i',
+                '',
+                $attrs
+            );
+
+            $attrs = preg_replace(
+                '/\s+style\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)/i',
+                '',
+                $attrs
+            );
+
+            return '<img' . $attrs . ' width="400" style="width:400px; max-width:100%; height:auto; display:block;">';
+        },
+        $html_content
+    );
+
+    // // Enveloppe dans un div pour contenir le débordement
+    $target->data['##ticket.contentfixed##'] = '<div style="max-width:100%; overflow:hidden;">'
+        . $contentWithFixedImages
+        . '</div>';
 }
