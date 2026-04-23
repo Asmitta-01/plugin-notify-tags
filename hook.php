@@ -145,7 +145,7 @@ function plugin_notifytags_item_get_data($target): void
             $height = plugin_notifytags_get_img_dimension($attrs, 'height');
 
             // Réglages
-            $small_limit   = 120; // petite image / logo
+            $remove_below = 340; // toute image < 340px est supprimée
             $near_min      = 340; // "proche de 400"
             $near_max      = 460;
 
@@ -158,14 +158,12 @@ function plugin_notifytags_item_get_data($target): void
 
             /**
              * 1.2 Supprime les petites images
-             * - si width connue et <= 120
-             * - ou si height connue et <= 120
-             * - ou si les 2 sont petites
+             * - si width connue et <= 340
+             * - ou si height connue et <= 340
              */
             if (
-                ($width !== null && $width <= $small_limit) ||
-                ($height !== null && $height <= $small_limit) ||
-                ($width !== null && $height !== null && max($width, $height) <= 150)
+                ($width !== null && $width <= $remove_below) ||
+                ($height !== null && $height <= $remove_below)
             ) {
                 return '';
             }
