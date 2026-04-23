@@ -136,6 +136,11 @@ function plugin_notifytags_item_get_data($target): void
         function ($matches) {
             $attrs = $matches[1];
 
+            // Supprime directement les images dont les dimensions sont en pt
+            if (preg_match('/\b(?:width|height|max-width)\s*:\s*\d+(?:\.\d+)?pt\b/i', $attrs)) {
+                return '';
+            }
+
             $width  = plugin_notifytags_get_img_dimension($attrs, 'width');
             $height = plugin_notifytags_get_img_dimension($attrs, 'height');
 
