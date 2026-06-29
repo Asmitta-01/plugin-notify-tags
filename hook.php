@@ -32,11 +32,16 @@
  * -------------------------------------------------------------------------
  */
 
+require_once __DIR__ . '/vendor/autoload.php';
+
+
 /**
  * Plugin install process
  */
 function plugin_notifytags_install(): bool
 {
+    \GlpiPlugin\NotifyTags\Logo::createIfMissing();
+
     return true;
 }
 
@@ -54,14 +59,21 @@ function plugin_notifytags_register_tags($target): void
         'tag'    => 'ticket.textcontent',
         'label'  => __('Ticket content (text only)', 'notifytags'),
         'value'  => true,
-        'events' => NotificationTarget::TAG_FOR_ALL_EVENTS,
+        'events' => \NotificationTarget::TAG_FOR_ALL_EVENTS,
     ]);
 
     $target->addTagToList([
         'tag'    => 'ticket.contentfixed',
         'label'  => __('Ticket content with fixed images sizes', 'notifytags'),
         'value'  => true,
-        'events' => NotificationTarget::TAG_FOR_ALL_EVENTS,
+        'events' => \NotificationTarget::TAG_FOR_ALL_EVENTS,
+    ]);
+
+    $target->addTagToList([
+        'tag'    => 'notifytags.logo',
+        'label'  => __('NotifyTags plugin logo', 'notifytags'),
+        'value'  => true,
+        'events' => \NotificationTarget::TAG_FOR_ALL_EVENTS,
     ]);
 }
 
@@ -236,4 +248,8 @@ function plugin_notifytags_item_get_data($target): void
     );
 
     $target->data['##ticket.textcontent##'] = nl2br($with_media_links);
+
+    global $CFG_GLPI;
+    $docId = \GlpiPlugin\NotifyTags\Logo::getDocId();
+    $target->data['##notifytags.logo##'] = $CFG_GLPI['root_doc'] . '/front/document.send.php?docid=' . $docId;
 }
